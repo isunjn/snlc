@@ -4,7 +4,7 @@ import { isKeyword } from "./common/keywords";
 
 type Char = string;
 type TokenizerResult = Token | LexError;
-type StateFn = (ch: Char, str?: Char[]) => StateFnResult;
+type StateFn = (ch: Char, str: Char[]) => StateFnResult;
 type StateFnResult = StateFn | TokenizerResult;
 
 const isLetter = /[A-Z|a-z]/;

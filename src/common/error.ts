@@ -4,7 +4,7 @@ export class LexError {
 
   constructor(line: number, msg?: string) {
     this.line = line;
-    if (this.msg !== undefined) {
+    if (msg !== undefined) {
       this.msg = msg;
     }
   }
