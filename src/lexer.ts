@@ -98,6 +98,9 @@ function S_START(ch: Char): StateFnResult {
     return S_INCHAR;
   }
 
+  if ("}" === ch) {
+    return new LexError(LINE, COLUMN, "Comment closing character mismatch");
+  }
   return new LexError(LINE, COLUMN, "Illegal character");
 }
 
@@ -139,9 +142,12 @@ function S_INCOLON(ch: Char): StateFnResult {
 }
 
 function S_INCOMMENT(ch: Char): StateFnResult {
-  if ("}" === ch || "EOF" === ch) {
-    if ("EOF" === ch) goBack(false, true);
+  if ("}" === ch) {
     return new Token(LINE, "COMMENT");
+  }
+  if ("EOF" === ch) {
+    goBack(false, true);
+    return new LexError(LINE, COLUMN, "Comment must be closed");
   }
   return S_INCOMMENT;
 }
@@ -194,9 +200,10 @@ function lexer(code: string): [Token[], LexError[]] {
 
   while (!REACH_END) {
     const result = tokenizer();
-    if (result instanceof Token && result.lex !== "WHITESPACE") {
+    if (result instanceof Token) {
+      if (result.lex === "WHITESPACE" || result.lex === "COMMENT") continue;
       tokens.push(result);
-    } else if (result instanceof LexError) {
+    } else {
       errors.push(result);
     }
   }
