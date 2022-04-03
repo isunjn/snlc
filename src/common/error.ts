@@ -1,12 +1,10 @@
 export class LexError {
   line: number;
-  msg = "Lexer Error";
+  msg: string;
 
-  constructor(line: number, msg?: string) {
+  constructor(line: number, msg: string) {
     this.line = line;
-    if (msg !== undefined) {
-      this.msg = msg;
-    }
+    this.msg = msg;
   }
 
   toString() {

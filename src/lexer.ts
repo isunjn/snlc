@@ -9,7 +9,7 @@ type StateFnResult = StateFn | TokenizerResult;
 
 const isLetter = /^[A-Za-z]$/;
 const isNumber = /^[0-9]$/;
-const isDelimiter = /^[+|-|*|/|(|)|[|\]|;|<|>|=|\s]|EOF$/;
+const isDelimiter = /^[+|\-|*|/|(|)|[|\]|;|<|=|,]|EOF$/;
 const isWhiteSpace = /^\s$/;
 
 let CODE: string;
@@ -42,10 +42,10 @@ function goBack(isNewLineBack: boolean, isEOFBack: boolean) {
 }
 
 function S_START(ch: Char): StateFnResult {
+  if (isWhiteSpace.test(ch)) {
+    return S_INWHITESPACE;
+  }
   if (isDelimiter.test(ch)) {
-    if (isWhiteSpace.test(ch)) {
-      return new Token(LINE, "WHITESPACE");
-    }
     switch (ch) {
       case "+":
         return new Token(LINE, "PLUS");
@@ -67,10 +67,10 @@ function S_START(ch: Char): StateFnResult {
         return new Token(LINE, "SEMI");
       case "<":
         return new Token(LINE, "LT");
-      case ">":
-        return new Token(LINE, "GT");
       case "=":
         return new Token(LINE, "EQ");
+      case ",":
+        return new Token(LINE, "COMMA")
       case "EOF":
         return new Token(LINE, "EOF");
     }
@@ -94,7 +94,15 @@ function S_START(ch: Char): StateFnResult {
     return S_INCHAR;
   }
 
-  return new LexError(LINE);
+  return new LexError(LINE, "Illegal character");
+}
+
+function S_INWHITESPACE(ch: Char): StateFnResult {
+  if (isWhiteSpace.test(ch)) {
+    return S_INWHITESPACE;
+  }
+  goBack(false, "EOF" === ch);
+  return new Token(LINE, "WHITESPACE");
 }
 
 function S_INID(ch: Char, str: Char[]): StateFnResult {
@@ -116,19 +124,20 @@ function S_INNUM(ch: Char, str: Char[]): StateFnResult {
   }
   goBack(ch === "\n", ch === "EOF");
   const value = str.reduce((acc, ch) => (acc += ch), "");
-  return new Token(LINE, "UINT", value);
+  return new Token(LINE, "INTC", value);
 }
 
 function S_INCOLON(ch: Char): StateFnResult {
   if ("=" === ch) {
     return new Token(LINE, "ASSIGN");
   }
-  return new LexError(LINE);
+  return new LexError(LINE, "Expect `=` after `:`");
 }
 
 function S_INCOMMENT(ch: Char): StateFnResult {
-  if ("}" === ch) {
-    return new Token(LINE, "COMMENT"); // TODO
+  if ("}" === ch || "EOF" === ch) {
+    if ("EOF" === ch) goBack(false, true);
+    return new Token(LINE, "COMMENT");
   }
   return S_INCOMMENT;
 }
@@ -137,22 +146,23 @@ function S_INDOT(ch: Char): StateFnResult {
   if ("." === ch) {
     return new Token(LINE, "RANGE");
   }
-  return new LexError(LINE);
+  goBack(ch === "\n", ch === "EOF");
+  return new Token(LINE, "DOT");
 }
 
 function S_INCHAR(ch: Char): StateFnResult {
   if (isLetter.test(ch) || isNumber.test(ch)) {
     return S_INENDCHAR;
   }
-  return new LexError(LINE);
+  return new LexError(LINE, "Expect a character after `'`");
 }
 
 function S_INENDCHAR(ch: Char, str: Char[]): StateFnResult {
   if ("'" === ch) {
     const theChar = str.pop();
-    return new Token(LINE, "CHAR", theChar);
+    return new Token(LINE, "CHARC", theChar);
   }
-  return new LexError(LINE);
+  return new LexError(LINE, "At most one character after `'`");
 }
 
 function tokenizer(): TokenizerResult {
