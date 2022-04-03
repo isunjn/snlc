@@ -3,7 +3,8 @@
 		"build": "tsc --build",
 		"clean": "tsc --build --clean",
 		"check": "tsc --project src.tsconfig.json --noEmit",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"run:lexer": "ts-node test/lexer.run.ts"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.2.162",
