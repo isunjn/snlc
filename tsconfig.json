@@ -1,12 +1,15 @@
 {
+  "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
-    "outDir": "out",
     "sourceMap": true,
+    "noEmitOnError": true,
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ]
+  "files": [],
+  "references": [
+    { "path": "src.tsconfig.json" },
+    { "path": "test.tsconfig.json" }
+  ],
+  "ts-node": {
+    "swc": true
+  }
 }
