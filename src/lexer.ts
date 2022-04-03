@@ -16,6 +16,7 @@ let CODE: string;
 let CODE_LEN: number;
 let INDEX: number;
 let LINE: number;
+let COLUMN: number;
 let REACH_END: boolean;
 
 function readChar(): Char {
@@ -24,21 +25,24 @@ function readChar(): Char {
     return "EOF";
   }
   const ch = CODE[INDEX++];
+  COLUMN++;
   if (ch === "\n") {
     LINE++;
+    COLUMN = 0;
   }
   return ch;
 }
 
 function goBack(isNewLineBack: boolean, isEOFBack: boolean) {
-  if (isNewLineBack) {
-    LINE--;
-  }
   if (isEOFBack) {
     REACH_END = false;
     return;
   }
   INDEX--;
+  COLUMN--;
+  if (isNewLineBack) {
+    LINE--;
+  }
 }
 
 function S_START(ch: Char): StateFnResult {
@@ -94,7 +98,7 @@ function S_START(ch: Char): StateFnResult {
     return S_INCHAR;
   }
 
-  return new LexError(LINE, "Illegal character");
+  return new LexError(LINE, COLUMN, "Illegal character");
 }
 
 function S_INWHITESPACE(ch: Char): StateFnResult {
@@ -131,7 +135,7 @@ function S_INCOLON(ch: Char): StateFnResult {
   if ("=" === ch) {
     return new Token(LINE, "ASSIGN");
   }
-  return new LexError(LINE, "Expect `=` after `:`");
+  return new LexError(LINE, COLUMN, "Expect `=` after `:`");
 }
 
 function S_INCOMMENT(ch: Char): StateFnResult {
@@ -154,7 +158,7 @@ function S_INCHAR(ch: Char): StateFnResult {
   if (isLetter.test(ch) || isNumber.test(ch)) {
     return S_INENDCHAR;
   }
-  return new LexError(LINE, "Expect a character after `'`");
+  return new LexError(LINE, COLUMN, "Expect a character after `'`");
 }
 
 function S_INENDCHAR(ch: Char, str: Char[]): StateFnResult {
@@ -162,7 +166,7 @@ function S_INENDCHAR(ch: Char, str: Char[]): StateFnResult {
     const theChar = str.pop();
     return new Token(LINE, "CHARC", theChar);
   }
-  return new LexError(LINE, "At most one character after `'`");
+  return new LexError(LINE, COLUMN, "At most one character after `'`");
 }
 
 function tokenizer(): TokenizerResult {
@@ -182,6 +186,7 @@ function lexer(code: string): [Token[], LexError[]] {
   CODE_LEN = code.length;
   INDEX = 0;
   LINE = 1;
+  COLUMN = 0;
   REACH_END = false;
 
   const tokens: Token[] = [];
