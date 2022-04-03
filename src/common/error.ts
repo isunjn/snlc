@@ -1,6 +1,6 @@
 export class LexError {
   line: number;
-  msg: string = "Lexer Error";
+  msg = "Lexer Error";
 
   constructor(line: number, msg?: string) {
     this.line = line;

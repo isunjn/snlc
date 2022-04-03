@@ -7,10 +7,10 @@ type TokenizerResult = Token | LexError;
 type StateFn = (ch: Char, str: Char[]) => StateFnResult;
 type StateFnResult = StateFn | TokenizerResult;
 
-const isLetter = /[A-Z|a-z]/;
-const isNumber = /[0-9]/;
-const isDelimiter = /[+|-|*|/|(|)|[|\]|;|<|>|=|\s|EOF]/;
-const isWhiteSpace = /[\s]/;
+const isLetter = /^[A-Za-z]$/;
+const isNumber = /^[0-9]$/;
+const isDelimiter = /^[+|-|*|/|(|)|[|\]|;|<|>|=|\s]|EOF$/;
+const isWhiteSpace = /^\s$/;
 
 let CODE: string;
 let CODE_LEN: number;
@@ -30,9 +30,13 @@ function readChar(): Char {
   return ch;
 }
 
-function goBack(isNewLineBack: boolean) {
+function goBack(isNewLineBack: boolean, isEOFBack: boolean) {
   if (isNewLineBack) {
     LINE--;
+  }
+  if (isEOFBack) {
+    REACH_END = false;
+    return;
   }
   INDEX--;
 }
@@ -97,7 +101,7 @@ function S_INID(ch: Char, str: Char[]): StateFnResult {
   if (isLetter.test(ch) || isNumber.test(ch)) {
     return S_INID;
   }
-  goBack(ch === "\n");
+  goBack(ch === "\n", ch === "EOF");
   const value = str.reduce((acc, ch) => (acc += ch), "");
   if (isKeyword(value)) {
     return new Token(LINE, value.toUpperCase());
@@ -110,7 +114,7 @@ function S_INNUM(ch: Char, str: Char[]): StateFnResult {
   if (isNumber.test(ch)) {
     return S_INNUM;
   }
-  goBack(ch === "\n");
+  goBack(ch === "\n", ch === "EOF");
   const value = str.reduce((acc, ch) => (acc += ch), "");
   return new Token(LINE, "UINT", value);
 }
@@ -152,7 +156,7 @@ function S_INENDCHAR(ch: Char, str: Char[]): StateFnResult {
 }
 
 function tokenizer(): TokenizerResult {
-  let str: Char[] = [];
+  const str: Char[] = [];
   let ch = readChar();
   let result = S_START(ch);
   while (typeof result === "function") {
@@ -170,8 +174,8 @@ function lexer(code: string): [Token[], LexError[]] {
   LINE = 1;
   REACH_END = false;
 
-  let tokens: Token[] = [];
-  let errors: LexError[] = [];
+  const tokens: Token[] = [];
+  const errors: LexError[] = [];
 
   while (!REACH_END) {
     const result = tokenizer();
