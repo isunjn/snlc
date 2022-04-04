@@ -15,9 +15,11 @@ const keywords = [
   "integer",
   "char",
   "array",
+  "record",
   "of",
   "read",
   "write",
+  "return",
 ];
 
 export function isKeyword(word: string): boolean {
