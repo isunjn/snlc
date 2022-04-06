@@ -1,4 +1,4 @@
-import Token from "./common/token";
+import { Token, type LexType } from "./common/token";
 import { LexError } from "./common/error";
 import { isKeyword } from "./common/keywords";
 
@@ -119,7 +119,7 @@ function S_INID(ch: Char, str: Char[]): StateFnResult {
   goBack(ch === "\n", ch === "EOF");
   const value = str.reduce((acc, ch) => (acc += ch), "");
   if (isKeyword(value)) {
-    return new Token(LINE, value.toUpperCase());
+    return new Token(LINE, value.toUpperCase() as LexType);
   } else {
     return new Token(LINE, "ID", value);
   }

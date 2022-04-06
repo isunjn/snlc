@@ -1,49 +1,12 @@
+import type { LexType } from "./token";
+
 // `symbol` is a keyword in js/ts, we use `symbo` instead
 // T for Terminal, N for Non-Terminal
 
 type Symbo = T_Symbo | N_Symbo;
 
 type T_Symbo =
-  | "PROGRAM"
-  | "VAR"
-  | "TYPE"
-  | "PROCEDURE"
-  | "WHILE"
-  | "DO"
-  | "ENDWH"
-  | "IF"
-  | "THEN"
-  | "ELSE"
-  | "FI"
-  | "BEGIN"
-  | "END"
-  | "INTEGER"
-  | "CHAR"
-  | "ARRAY"
-  | "RECORD"
-  | "OF"
-  | "READ"
-  | "WRITE"
-  | "RETURN"
-  | "ID"
-  | "INTC"
-  | "CHARC"
-  | "ASSIGN"
-  | "RANGE"
-  | "PLUS"
-  | "MINUS"
-  | "MULTI"
-  | "DEVIDE"
-  | "L_PAREN"
-  | "R_PAREN"
-  | "L_SQUARE"
-  | "R_SQUARE"
-  | "SEMI"
-  | "LT"
-  | "EQ"
-  | "COMMA"
-  | "DOT"
-  | "EOF"
+  | Exclude<LexType, "COMMENT" | "WHITESPACE">
   | "EOS"
   | "EPSILON";
 
