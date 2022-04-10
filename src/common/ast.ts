@@ -1,18 +1,32 @@
 type Base = {
+  // TODO:
   // span: { start: number; end: number}
 }
 
 export type Identifier = Base & {
+  kind: "Identifier";
   value: string;
+  sibling: Identifier | null;
 }
 
 export type IntegerLiteral = Base & {
+  kind: "IntegerLiteral";
   value: number;
+  sibling: IntegerLiteral | null;
 }
 
+// TODO:
 // export type CharLiteral = Base & {
 //   value: string;
 // }
+
+export function createIndifiter(value: string): Identifier {
+  return { kind: "Identifier", value, sibling: null };
+}
+
+export function createIntegerLiteral(value: number): IntegerLiteral {
+  return { kind: "IntegerLiteral", value, sibling: null };
+}
 
 //----------------------------------------------------------------
 
@@ -25,41 +39,69 @@ export type Program = Base & {
 
 export type ProgramBody = Base & {
   kind: "ProgramBody";
-  stms: Stm[];
+  stms: Stm;
 }
+
+//----------------------------------------------------------------
 
 export type DeclarePart = Base & {
   kind: "DeclarePart";
-  types: TypeDeclaration[] | null;
-  vars: VarDeclaration[] | null;
-  procs: ProcDeclaration[] | null;
+  typePart: TypeDeclarePart | null;
+  varPart: VarDeclarePart | null;
+  procPart: ProcDeclarePart | null;
 }
+
+export type TypeDeclarePart = Base & {
+  kind: "TypeDeclarePart";
+  types: TypeDeclaration;
+}
+
+export type VarDeclarePart = Base & {
+  kind: "VarDeclarePart";
+  vars: VarDeclaration;
+}
+
+export type ParamDeclarePart = Base & {
+  kind: "ParamDeclarePart";
+  params: ParamDeclaration | null;
+}
+
+export type ProcDeclarePart = Base & {
+  kind: "ProcDeclarePart";
+  procs: ProcDeclaration;
+}
+
+//----------------------------------------------------------------
 
 export type TypeDeclaration = Base & {
   kind: "TypeDeclaration";
   id: Identifier;
   type: SnlType;
+  sibling: TypeDeclaration | null;
 }
 
 export type VarDeclaration = Base & {
   kind: "VarDeclaration";
-  ids: Identifier[];
+  ids: Identifier;
   type: SnlType;
+  sibling: VarDeclaration | null;
 }
 
 export type ParamDeclaration = Base & {
   kind: "ParamDeclaration";
-  ids: Identifier[];
+  ids: Identifier;
   type: SnlType;
-  passBy: "value" | "reference";
+  passBy: "value" | "ref";
+  sibling: ParamDeclaration | null;
 }
 
 export type ProcDeclaration = Base & {
   kind: "ProcDeclaration";
   name: Identifier;
-  params: ParamDeclaration[];
+  params: ParamDeclarePart;
   declare: DeclarePart;
   body: ProgramBody;
+  sibling: ProcDeclaration | null;
 }
 
 //----------------------------------------------------------------
@@ -83,7 +125,7 @@ export type ArrayType = Base & {
 
 export type RecordType = Base & {
   kind: "RecordType";
-  fields: VarDeclaration[];
+  fields: VarDeclaration;
 }
 
 export type IdType = Base & {
@@ -98,41 +140,48 @@ export type Stm = IfStm | WhileStm | ReadStm | WriteStm | ReturnStm | AssignStm 
 export type IfStm = Base & {
   kind: "IfStm";
   test: OpExp;
-  thenStms: Stm[];
-  elseStms: Stm[] | null;
+  thenStms: Stm;
+  elseStms: Stm | null;
+  sibling: Stm | null;
 }
 
 export type WhileStm = Base & {
   kind: "WhileStm";
   test: OpExp;
-  loopStms: Stm[];
+  loopStms: Stm;
+  sibling: Stm | null;
 }
 
 export type ReadStm = Base & {
   kind: "ReadStm";
   to: Identifier;
+  sibling: Stm | null;
 }
 
 export type WriteStm = Base & {
   kind: "WriteStm";
   what: Exp;
+  sibling: Stm | null;
 }
 
 export type ReturnStm = Base & {
   kind: "ReturnStm";
   what: Exp;
+  sibling: Stm | null;
 }
 
 export type AssignStm = Base & {
   kind: "AssignStm";
   left: Variable;
   right: Exp;
+  sibling: Stm | null;
 }
 
 export type CallStm = Base & {
   kind: "CallStm";
   fn: Identifier;
-  args: Exp[];
+  args: Exp;
+  sibling: Stm | null;
 }
 
 //----------------------------------------------------------------
@@ -144,16 +193,19 @@ export type OpExp = Base & {
   op: "+" | "-" | "*" | "/" | "<" | "=";
   left: Exp;
   right: Exp;
+  sibling: Exp | null;
 }
 
 export type ConstExp = Base & {
   kind: "ConstExp";
   content: IntegerLiteral;
+  sibling: Exp | null;
 }
 
 export type IdExp = Base & {
   kind: "IdExp";
   content: Variable;
+  sibling: Exp | null;
 }
 
 //----------------------------------------------------------------
@@ -178,9 +230,15 @@ export type FieldVariMore = Base & {
 //================================================================
 
 export type NodeKind = 
+  | "Identifier"
+  | "IntegerLiteral"
   | "Program"
   | "ProgramBody"
   | "DeclarePart"
+  | "TypeDeclarePart"
+  | "VarDeclarePart"
+  | "ParamDeclarePart"
+  | "ProcDeclarePart"
   | "TypeDeclaration"
   | "VarDeclaration"
   | "ParamDeclaration"
@@ -204,10 +262,16 @@ export type NodeKind =
   | "ArrayVariMore"
   | "FieldVariMore";
 
-export type GetTypeOf<T extends NodeKind> = 
+export type Node<T extends NodeKind> = 
+  T extends "Identifier"       ? Identifier       :
+  T extends "IntegerLiteral"   ? IntegerLiteral   :
   T extends "Program"          ? Program          :
   T extends "ProgramBody"      ? ProgramBody      :
   T extends "DeclarePart"      ? DeclarePart      :
+  T extends "TypeDeclarePart"  ? TypeDeclarePart  :
+  T extends "VarDeclarePart"   ? VarDeclarePart   :
+  T extends "ParamDeclarePart" ? ParamDeclarePart :
+  T extends "ProcDeclarePart"  ? ProcDeclarePart  :
   T extends "TypeDeclaration"  ? TypeDeclaration  :
   T extends "VarDeclaration"   ? VarDeclaration   :
   T extends "ParamDeclaration" ? ParamDeclaration :
@@ -234,10 +298,16 @@ export type GetTypeOf<T extends NodeKind> =
 
 type Nullable<T> = { [P in keyof T]: T[P] | null };
 
-export type GetNullableTypeOf<T extends NodeKind> = 
+export type NullableNode<T extends NodeKind> = 
+  T extends "Identifier"       ? Nullable<Identifier>       :
+  T extends "IntegerLiteral"   ? Nullable<IntegerLiteral>   :
   T extends "Program"          ? Nullable<Program>          :
   T extends "ProgramBody"      ? Nullable<ProgramBody>      :
   T extends "DeclarePart"      ? Nullable<DeclarePart>      :
+  T extends "TypeDeclarePart"  ? Nullable<TypeDeclarePart>  :
+  T extends "VarDeclarePart"   ? Nullable<VarDeclarePart>   :
+  T extends "ParamDeclarePart" ? Nullable<ParamDeclarePart> :
+  T extends "ProcDeclarePart"  ? Nullable<ProcDeclarePart>  :
   T extends "TypeDeclaration"  ? Nullable<TypeDeclaration>  :
   T extends "VarDeclaration"   ? Nullable<VarDeclaration>   :
   T extends "ParamDeclaration" ? Nullable<ParamDeclaration> :
@@ -262,59 +332,39 @@ export type GetNullableTypeOf<T extends NodeKind> =
   T extends "FieldVariMore"    ? Nullable<FieldVariMore>    :
   never;
 
-export function createNode<T extends NodeKind>(kind: T): GetNullableTypeOf<T> {
+export function createNullableNode<T extends NodeKind>(kind: T): NullableNode<T> {
   switch (kind) {
-    case "Program":
-      return { kind, name: null, declare: null, body: null } as GetNullableTypeOf<T>;
-    case "ProgramBody":
-      return { kind, stms: null } as GetNullableTypeOf<T>;
-    case "DeclarePart":
-      return { kind, types: null, vars: null, procs: null } as GetNullableTypeOf<T>;
-    case "TypeDeclaration":
-      return { kind, id: null, type: null } as GetNullableTypeOf<T>;
-    case "VarDeclaration":
-      return { kind, ids: null, type: null } as GetNullableTypeOf<T>;
-    case "ParamDeclaration":
-      return { kind, ids: null, type: null, passBy: null } as GetNullableTypeOf<T>;
-    case "ProcDeclaration":
-      return { kind, name: null, params: null, declare: null, body: null } as GetNullableTypeOf<T>;
-    case "IntegerType":
-      return { kind } as GetNullableTypeOf<T>;
-    case "CharType":
-      return { kind } as GetNullableTypeOf<T>;
-    case "ArrayType":
-      return { kind, low: null, high: null, elemType: null } as GetNullableTypeOf<T>;
-    case "RecordType":
-      return { kind, fields: null } as GetNullableTypeOf<T>;
-    case "IdType":
-      return { kind, id: null } as GetNullableTypeOf<T>;
-    case "IfStm":
-      return { kind, test: null, thenStms: null, elseStms: null } as GetNullableTypeOf<T>;
-    case "WhileStm":
-      return { kind, test: null, loopStms: null } as GetNullableTypeOf<T>;
-    case "ReadStm":
-      return { kind, to: null } as GetNullableTypeOf<T>;
-    case "WriteStm":
-      return { kind, what: null } as GetNullableTypeOf<T>;
-    case "ReturnStm":
-      return { kind, what: null } as GetNullableTypeOf<T>;
-    case "AssignStm":
-      return { kind, left: null, right: null } as GetNullableTypeOf<T>;
-    case "CallStm":
-      return { kind, fn: null, args: null } as GetNullableTypeOf<T>;
-    case "OpExp":
-      return { kind, op: null, left: null, right: null } as GetNullableTypeOf<T>;
-    case "ConstExp":
-      return { kind, content: null } as GetNullableTypeOf<T>;
-    case "IdExp":
-      return { kind, content: null } as GetNullableTypeOf<T>;
-    case "Variable":
-      return { kind, id: null, more: null } as GetNullableTypeOf<T>;
-    case "ArrayVariMore":
-      return { kind, index: null } as GetNullableTypeOf<T>;
-    case "FieldVariMore":
-      return { kind, id: null, more: null } as GetNullableTypeOf<T>;
-    default:
-      throw "panic!";
+    case "Identifier":       return { kind, value: null, sibling: null }                                         as NullableNode<T>;
+    case "IntegerLiteral":   return { kind, value: null, sibling: null }                                         as NullableNode<T>;
+    case "Program":          return { kind, name: null, declare: null, body: null }                              as NullableNode<T>;
+    case "ProgramBody":      return { kind, stms: null }                                                         as NullableNode<T>;
+    case "DeclarePart":      return { kind, typePart: null, varPart: null, procPart: null }                      as NullableNode<T>;
+    case "TypeDeclarePart":  return { kind, types: null }                                                        as NullableNode<T>;
+    case "VarDeclarePart":   return { kind, vars: null }                                                         as NullableNode<T>;
+    case "ParamDeclarePart": return { kind, params: null }                                                       as NullableNode<T>;
+    case "ProcDeclarePart":  return { kind, procs: null }                                                        as NullableNode<T>;
+    case "TypeDeclaration":  return { kind, id: null, type: null, sibling: null }                                as NullableNode<T>;
+    case "VarDeclaration":   return { kind, ids: null, type: null, sibling: null }                               as NullableNode<T>;
+    case "ParamDeclaration": return { kind, ids: null, type: null, passBy: null, sibling: null }                 as NullableNode<T>;
+    case "ProcDeclaration":  return { kind, name: null, params: null, declare: null, body: null, sibling: null } as NullableNode<T>;
+    case "IntegerType":      return { kind }                                                                     as NullableNode<T>;
+    case "CharType":         return { kind }                                                                     as NullableNode<T>;
+    case "ArrayType":        return { kind, low: null, high: null, elemType: null }                              as NullableNode<T>;
+    case "RecordType":       return { kind, fields: null }                                                       as NullableNode<T>;
+    case "IdType":           return { kind, id: null }                                                           as NullableNode<T>;
+    case "IfStm":            return { kind, test: null, thenStms: null, elseStms: null, sibling: null }          as NullableNode<T>;
+    case "WhileStm":         return { kind, test: null, loopStms: null, sibling: null }                          as NullableNode<T>;
+    case "ReadStm":          return { kind, to: null, sibling: null }                                            as NullableNode<T>;
+    case "WriteStm":         return { kind, what: null, sibling: null }                                          as NullableNode<T>;
+    case "ReturnStm":        return { kind, what: null, sibling: null }                                          as NullableNode<T>;
+    case "AssignStm":        return { kind, left: null, right: null, sibling: null }                             as NullableNode<T>;
+    case "CallStm":          return { kind, fn: null, args: null, sibling: null }                                as NullableNode<T>;
+    case "OpExp":            return { kind, op: null, left: null, right: null, sibling: null }                   as NullableNode<T>;
+    case "ConstExp":         return { kind, content: null, sibling: null }                                       as NullableNode<T>;
+    case "IdExp":            return { kind, content: null, sibling: null }                                       as NullableNode<T>;
+    case "Variable":         return { kind, id: null, more: null }                                               as NullableNode<T>;
+    case "ArrayVariMore":    return { kind, index: null }                                                        as NullableNode<T>;
+    case "FieldVariMore":    return { kind, id: null, more: null }                                               as NullableNode<T>;
+    default:                 throw "panic!";
   }
 }
