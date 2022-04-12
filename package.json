@@ -5,7 +5,8 @@
 		"check": "tsc --project src.tsconfig.json --noEmit",
 		"lint": "eslint .",
 		"run:lexer": "ts-node test/lexer.run.ts",
-		"run:predict": "ts-node test/predict.run.ts"
+		"run:predict": "ts-node test/predict.run.ts",
+		"run:rd": "ts-node test/rd-parser.run.ts"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.2.162",
