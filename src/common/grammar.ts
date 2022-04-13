@@ -3,14 +3,11 @@ import type { LexType } from "./token";
 // `symbol` is a keyword in js/ts, we use `symbo` instead
 // T for Terminal, N for Non-Terminal
 
-type Symbo = T_Symbo | N_Symbo;
+export type Symbo = T_Symbo | N_Symbo;
 
-type T_Symbo =
-  | Exclude<LexType, "COMMENT" | "WHITESPACE">
-  | "EOS"
-  | "EPSILON";
+export type T_Symbo = "EPSILON" | Exclude<LexType, "COMMENT" | "WHITESPACE">;
 
-type N_Symbo =
+export type N_Symbo =
   | "Program"
   | "ProgramHead"
   | "ProgramBody"
@@ -89,7 +86,7 @@ class Rule {
   }
 }
 
-const grammar = new Map<number, Rule>()
+export const grammar = new Map<number, Rule>()
   .set(1, new Rule("Program", ["ProgramHead", "DeclarePart", "ProgramBody"]))
   .set(2, new Rule("ProgramHead", ["PROGRAM", "ProgramName"]))
   .set(3, new Rule("ProgramName", ["ID"]))
@@ -194,14 +191,3 @@ const grammar = new Map<number, Rule>()
   .set(102, new Rule("AddOp", ["MINUS"]))
   .set(103, new Rule("MultOp", ["MULTI"]))
   .set(104, new Rule("MultOp", ["DEVIDE"]));
-
-
-export type {
-  Symbo,
-  T_Symbo,
-  N_Symbo,
-} 
-
-export {
-  grammar,
-}

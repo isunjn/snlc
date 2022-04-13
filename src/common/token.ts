@@ -20,25 +20,25 @@ export type LexType =
   | "READ"
   | "WRITE"
   | "RETURN"
-  | "ID"
-  | "INTC"
-  | "CHARC"
-  | "ASSIGN"
-  | "RANGE"
-  | "PLUS"
-  | "MINUS"
-  | "MULTI"
-  | "DEVIDE"
-  | "L_PAREN"
-  | "R_PAREN"
-  | "L_SQUARE"
-  | "R_SQUARE"
-  | "SEMI"
-  | "LT"
-  | "EQ"
-  | "COMMA"
-  | "DOT"
-  | "EOF"
+  | "ID"           // Identifier
+  | "INTC"         // Integer
+  | "CHARC"        // Char
+  | "ASSIGN"       // :=
+  | "RANGE"        // ..
+  | "PLUS"         // +
+  | "MINUS"        // -
+  | "MULTI"        // *
+  | "DEVIDE"       // /
+  | "L_PAREN"      // (
+  | "R_PAREN"      // )
+  | "L_SQUARE"     // [
+  | "R_SQUARE"     // ]
+  | "SEMI"         // ;
+  | "LT"           // <
+  | "EQ"           // =
+  | "COMMA"        // ,
+  | "DOT"          // .
+  | "EOI"          // # (End Of Input)
   | "COMMENT"
   | "WHITESPACE";
 
