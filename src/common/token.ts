@@ -44,11 +44,13 @@ export type LexType =
 
 export class Token {
   line: number;
+  column: number;
   lex: LexType;
   sem?: string;
 
-  constructor(line: number, lex: LexType, sem?: string) {
+  constructor(line: number, column: number, lex: LexType, sem?: string) {
     this.line = line;
+    this.column = column;
     this.lex = lex;
     if (sem !== undefined) {
       this.sem = sem;
@@ -56,6 +58,6 @@ export class Token {
   }
 
   toString() {
-    return `[${this.line}]\t ${this.lex}\t\t ${this.sem ? this.sem : ""}`;
+    return `[${this.line},${this.column}]\t ${this.lex}\t\t ${this.sem ? this.sem : ""}`;
   }
 }

@@ -63,7 +63,7 @@ class ParsingWorker<T extends NodeKind | LiteralNodeKind | FactorAndTerm, N exte
   }
 
   or_err(msg: string): ParsingResult<T, N> | undefined {
-    if (this._miss) throw new SyntaxError(this._token.line, -1, msg); // TODO: error column
+    if (this._miss) throw new SyntaxError(this._token.line, this._token.column, msg);
     return this._result; // if there is no error, return the parsing result
   }
 }
