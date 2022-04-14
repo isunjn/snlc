@@ -57,7 +57,7 @@ function getPredictSets(): Map<number, Set<T_Symbo>> {
   for (const rule of grammar.values()) {
     followSets.set(rule.left, new Set<T_Symbo>());
   }
-  followSets.get("Program")!.add("EOS");
+  followSets.get("Program")!.add("EOI");
 
   let isFoConverge = false;
   while (!isFoConverge) {
@@ -106,7 +106,7 @@ function getPredictSets(): Map<number, Set<T_Symbo>> {
   for (const [ruleIdx, rule] of grammar) {
     // let's say rule is A -> B
     const set = predictSets.get(ruleIdx)!;
-    const FiB = getFirstSetOfRight(rule.right);
+    const FiB = getFirstSetOfRight([...rule.right]);
     if (FiB.find(s => s === "EPSILON")) {
       // ε is in Fi(B), predict set is (Fi(B) - {ε}) U Fo(A)
       for (const symbo of FiB.filter(s => s !== "EPSILON")) set.add(symbo);
