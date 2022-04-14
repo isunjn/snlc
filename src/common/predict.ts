@@ -129,7 +129,6 @@ function getPredictTable(): Map<N_Symbo, Map<T_Symbo, number>> {
     for (const symbo of symbos) {
       row.set(symbo, ruleIdx);
     }
-    // TODO: handle with syntax errors, should be in table
     predictTable.set(rule.left, row);
   }
   return predictTable;  

@@ -269,7 +269,7 @@ export type AST = Node<"Program">;
 
 type Nullable<T> = { [P in keyof T]: T[P] | null };
 
-type NullableNode<T extends NodeKind> = 
+export type NullableNode<T extends NodeKind> = 
   T extends "Identifier"       ? Nullable<Identifier>       :
   T extends "IntegerLiteral"   ? Nullable<IntegerLiteral>   :
   T extends "Program"          ? Nullable<Program>          :

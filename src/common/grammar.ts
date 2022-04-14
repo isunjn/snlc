@@ -87,7 +87,7 @@ class Rule {
 }
 
 export const grammar = new Map<number, Rule>()
-  .set(1, new Rule("Program", ["ProgramHead", "DeclarePart", "ProgramBody"]))
+  .set(1, new Rule("Program", ["ProgramHead", "DeclarePart", "ProgramBody", "DOT"]))
   .set(2, new Rule("ProgramHead", ["PROGRAM", "ProgramName"]))
   .set(3, new Rule("ProgramName", ["ID"]))
   .set(4, new Rule("DeclarePart", ["TypeDec", "VarDec", "ProcDec"]))
