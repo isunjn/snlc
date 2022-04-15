@@ -3,7 +3,7 @@
 import fs from "fs";
 import path from "path";
 
-import { AST, Node, NodeKind, Identifier, Declaration, Stm, Exp } from "./common/ast";
+import { AST, Node, NodeKind, DeclarationKind, StmKind, ExpKind } from "./common/ast";
 import { getPredictSets, getPredictTable } from "./common/predict";
 import { Error } from "./common/error";
 import lexer from "./lexer";
@@ -179,9 +179,8 @@ function printAST(ast: AST) {
     prefix.pop();
   }
 
-  function mayHaveSibling(node: Node<NodeKind>): node is (Identifier | Declaration | Stm | Exp) {
-    if ((<Identifier | Declaration | Stm | Exp>node).sibling !== undefined ) return true;
-    else return false;
+  function mayHaveSibling(node: Node<NodeKind>): node is (Node<"Identifier"> | Node<DeclarationKind> | Node<StmKind> | Node<ExpKind>) {
+    return (<Node<"Identifier"> | Node<DeclarationKind> | Node<StmKind> | Node<ExpKind>>node).sibling !== undefined;
   }
 
   process.stdout.write("AST\n");

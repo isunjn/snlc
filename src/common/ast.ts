@@ -3,7 +3,7 @@ type Base = {
   // span: { start: number; end: number}
 }
 
-export type Identifier = Base & {
+type Identifier = Base & {
   kind: "Identifier";
   value: string;
   sibling: Identifier | null;
@@ -42,8 +42,6 @@ type DeclarePart = Base & {
 }
 
 //----------------------------------------------------------------
-
-export type Declaration = TypeDeclaration | VarDeclaration | ParamDeclaration | ProcDeclaration;
 
 type TypeDeclaration = Base & {
   kind: "TypeDeclaration";
@@ -107,7 +105,7 @@ type IdType = Base & {
 
 //----------------------------------------------------------------
 
-export type Stm = IfStm | WhileStm | ReadStm | WriteStm | ReturnStm | AssignStm | CallStm;
+type Stm = IfStm | WhileStm | ReadStm | WriteStm | ReturnStm | AssignStm | CallStm;
 
 type IfStm = Base & {
   kind: "IfStm";
@@ -201,8 +199,11 @@ type FieldVariMore = Base & {
 
 //================================================================
 
+type Nullable<T> = { [P in keyof T]: T[P] | null };
+export type AST = Node<"Program">;
+
 export type LiteralNodeKind = "value" | "ref" | "<" | "=" | "+" | "-" | "*" | "/";
-export type FactorAndTerm = ["*" | "/", Node<ExpKind>] | ["+" | "-", Node<ExpKind>];
+export type DeclarationKind = "TypeDeclaration" | "VarDeclaration" | "ParamDeclaration" | "ProcDeclaration";
 export type SnlTypeKind = "IntegerType" | "CharType" | "ArrayType" | "RecordType" | "IdType";
 export type StmKind = | "IfStm" | "WhileStm" | "ReadStm" | "WriteStm" | "ReturnStm" | "AssignStm" | "CallStm";
 export type ExpKind = "OpExp" | "ConstExp" | "IdExp";
@@ -264,10 +265,6 @@ export type Node<T extends NodeKind> =
   T extends "ArrayVariMore"    ? ArrayVariMore    :
   T extends "FieldVariMore"    ? FieldVariMore    :
   never;
-
-export type AST = Node<"Program">;
-
-type Nullable<T> = { [P in keyof T]: T[P] | null };
 
 export type NullableNode<T extends NodeKind> = 
   T extends "Identifier"       ? Nullable<Identifier>       :

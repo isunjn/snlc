@@ -2,7 +2,7 @@
 
 import type { Token, LexType } from "./common/token";
 import type { T_Symbo } from "./common/grammar";
-import type { NodeKind, LiteralNodeKind, FactorAndTerm, SnlTypeKind, StmKind, ExpKind, Node, Identifier, AST } from "./common/ast";
+import type { NodeKind, LiteralNodeKind, SnlTypeKind, StmKind, ExpKind, Node, AST } from "./common/ast";
 import { createNode} from "./common/ast";
 import { getPredictSets } from "./common/predict";
 import { SyntaxError } from "./common/error";
@@ -13,7 +13,7 @@ type ParsingResult<T, N> = N extends null
   ? (T extends NodeKind ? Node<T> : T) | null 
   : (T extends NodeKind ? Node<T> : T);
 
-class ParsingWorker<T extends NodeKind | LiteralNodeKind | FactorAndTerm, N extends null | unknown> {
+class ParsingWorker<T extends NodeKind | LiteralNodeKind, N extends null | unknown> {
   static readonly _predictSets = getPredictSets();
   static _tokens: Token[];
   static _index: number;
@@ -44,12 +44,27 @@ class ParsingWorker<T extends NodeKind | LiteralNodeKind | FactorAndTerm, N exte
     return this;
   }
 
+  is_op(ops: ["<", "="] | ["+", "-"] | ["*" , "/"]): ParsingWorker<T, N> {
+    switch (ops[0]) {
+      case "<": if (this._token.lex !== "LT" && this._token.lex !== "EQ") this._miss = true; break;
+      case "+": if (this._token.lex !== "PLUS" && this._token.lex !== "MINUS") this._miss = true; break;
+      case "*": if (this._token.lex !== "MULTI" && this._token.lex !== "DEVIDE") this._miss = true; break;
+    }
+    return this;
+  }
+
   then_take(fn?: () =>  ParsingResult<T, N>): ParsingWorker<T, N> { // take as parsing result
     if (this._miss || this._take) return this;
     if (fn) this._result = fn();
     else switch (this._token.lex) {
       case "ID": this._result = { kind: "Identifier", value: this._token.sem!, sibling: null } as ParsingResult<T, N>; break;
       case "INTC": this._result = { kind: "IntegerLiteral", value: parseInt(this._token.sem!) } as ParsingResult<T, N>; break;
+      case "LT": this._result = "<" as ParsingResult<T, N>; break;
+      case "EQ": this._result = "=" as ParsingResult<T, N>; break;
+      case "PLUS": this._result = "+" as ParsingResult<T, N>; break;
+      case "MINUS": this._result = "-" as ParsingResult<T, N>; break;
+      case "MULTI": this._result = "*" as ParsingResult<T, N>; break;
+      case "DEVIDE": this._result = "/" as ParsingResult<T, N>; break;
       default: throw "panic!";
     }
     this._take = true;
@@ -66,9 +81,14 @@ class ParsingWorker<T extends NodeKind | LiteralNodeKind | FactorAndTerm, N exte
     if (this._miss) throw new SyntaxError(this._token.line, this._token.column, msg);
     return this._result; // if there is no error, return the parsing result
   }
+
+  or_omit(): ParsingResult<T, N> | undefined { // omit means if miss, we do nothing, and should not consume token
+    if (this._miss) ParsingWorker._index--;
+    return this._result;
+  }
 }
 
-function next<T extends NodeKind | LiteralNodeKind | FactorAndTerm, N extends null | unknown = unknown>(): ParsingWorker<T, N> {
+function next<T extends NodeKind | LiteralNodeKind, N extends null | unknown = unknown>(): ParsingWorker<T, N> {
   return new ParsingWorker<T, N>();
 }
 
@@ -234,13 +254,12 @@ function parseVarIdMore(): Node<"Identifier"> | null {
 function parseProcDec(): Node<"ProcDeclaration"> | null {
   return next<"ProcDeclaration", null>()
   .in_predict(39).then_take(() => null)
-  .in_predict(40).then_take(parseProcDecList)
+  .in_predict(40).then_skip().then_take(parseProcDecList)
   .or_err("Unexpected token")!;
 }
 
 function parseProcDecList(): Node<"ProcDeclaration"> {
   const node = createNode("ProcDeclaration");
-  next().match("PROCEDURE").or_err("Expect keyword `procedure`");
   node.name = next<"Identifier">().match("ID").then_take().or_err("Expect an identifier")!;
   next().match("L_PAREN").or_err("Expect `(`");
   node.params = parseParamList();
@@ -327,18 +346,17 @@ function parseStmMore(): Node<StmKind> | null {
 
 function parseStm(): Node<StmKind> {
   return next<StmKind>()
-  .in_predict(61).then_take(parseIfStm)
-  .in_predict(62).then_take(parseWhileStm)
-  .in_predict(63).then_take(parseReadStm)
-  .in_predict(64).then_take(parseWriteStm)
-  .in_predict(65).then_take(parseReturnStm)
+  .in_predict(61).then_skip().then_take(parseIfStm)
+  .in_predict(62).then_skip().then_take(parseWhileStm)
+  .in_predict(63).then_skip().then_take(parseReadStm)
+  .in_predict(64).then_skip().then_take(parseWriteStm)
+  .in_predict(65).then_skip().then_take(parseReturnStm)
   .in_predict(66).then_take(parseAssCall)
   .or_err("Unexpected token")!;
 }
 
 function parseIfStm(): Node<"IfStm"> {
   const node = createNode("IfStm");
-  next().match("IF").or_err("Expect keyword `if`");
   node.test = parseRelExp();
   next().match("THEN").or_err("Expect keyword `then`");
   node.thenStms = parseStmList();
@@ -350,7 +368,6 @@ function parseIfStm(): Node<"IfStm"> {
 
 function parseWhileStm(): Node<"WhileStm"> {
   const node = createNode("WhileStm");
-  next().match("WHILE").or_err("Expect keyword `while`");
   node.test = parseRelExp();
   next().match("DO").or_err("Expect keyword `do`");
   node.loopStms = parseStmList();
@@ -360,7 +377,6 @@ function parseWhileStm(): Node<"WhileStm"> {
 
 function parseReadStm(): Node<"ReadStm"> {
   const node = createNode("ReadStm");
-  next().match("READ").or_err("Expect keyword `read`");
   next().match("L_PAREN").or_err("Expect `(`");
   node.to = next<"Identifier">().match("ID").then_take().or_err("Expect an identifier")!;
   next().match("R_PAREN").or_err("Expect `)`");
@@ -369,7 +385,6 @@ function parseReadStm(): Node<"ReadStm"> {
 
 function parseWriteStm(): Node<"WriteStm"> {
   const node = createNode("WriteStm")
-  next().match("WRITE").or_err("Expect keyword `write`");
   next().match("L_PAREN").or_err("Expect `(`");
   node.what = parseExp();
   next().match("R_PAREN").or_err("Expect `)`");
@@ -378,7 +393,6 @@ function parseWriteStm(): Node<"WriteStm"> {
 
 function parseReturnStm(): Node<"ReturnStm"> {
   const node = createNode("ReturnStm")
-  next().match("RETURN").or_err("Expect keyword `return`")
   next().match("L_PAREN").or_err("Expect `(`")
   node.what = parseExp();
   next().match("R_PAREN").or_err("Expect `)`")
@@ -389,11 +403,11 @@ function parseAssCall(): Node<"AssignStm" | "CallStm"> {
   const id = next<"Identifier">().match("ID").then_take().or_err("Expect an identifier")!;
   return next<"AssignStm" | "CallStm">()
   .in_predict(67).then_take(() => parseAssignmentRest(id))
-  .in_predict(68).then_take(() => parseCallStmRest(id))
+  .in_predict(68).then_skip().then_take(() => parseCallStmRest(id))
   .or_err("Unexpected token")!;
 }
 
-function parseAssignmentRest(id: Identifier): Node<"AssignStm"> {
+function parseAssignmentRest(id: Node<"Identifier">): Node<"AssignStm"> {
   const left = createNode("Variable");
   left.id = id;
   left.more = parseVariMore();
@@ -404,10 +418,9 @@ function parseAssignmentRest(id: Identifier): Node<"AssignStm"> {
   return node as Node<"AssignStm">;
 }
 
-function parseCallStmRest(id: Identifier): Node<"CallStm"> {
+function parseCallStmRest(id: Node<"Identifier">): Node<"CallStm"> {
   const node = createNode("CallStm");
   node.fn = id;
-  next().match("L_PAREN").or_err("Expect `(`");
   node.args = parseActParamList();
   next().match("R_PAREN").or_err("Expect `)`");
   return node as Node<"CallStm">;
@@ -434,53 +447,39 @@ function parseActParamMore(): Node<ExpKind> | null {
 function parseRelExp(): Node<"OpExp"> {
   const node = createNode("OpExp");
   node.left = parseExp();
-  node.op = parseCmpOp();
+  node.op = next<"<" | "=">().is_op(["<", "="]).then_take().or_err("Expect `<` or `=`")!;
   node.right = parseExp();
   return node as Node<"OpExp">;
 }
 
 function parseExp(): Node<ExpKind> {
-  const term = parseTerm();
-  const otherTerm = parseOtherTerm();
-  if (otherTerm === null) return term as Node<ExpKind>;
-  const addOpExp = createNode("OpExp");
-  addOpExp.left = term;
-  addOpExp.op = otherTerm[0];
-  addOpExp.right = otherTerm[1];
-  return addOpExp as Node<"OpExp">;
+  let exp = parseTerm();
+  while (true) {
+    const op = next<"+" | "-">().is_op(["+", "-"]).then_take().or_omit();
+    if (!op) break;
+    const otherTerm = parseTerm();
+    const addOpExp = createNode("OpExp");
+    addOpExp.left = exp;
+    addOpExp.op = op;
+    addOpExp.right = otherTerm;
+    exp = addOpExp as Node<ExpKind>;
+  }
+  return exp;
 }
 
 function parseTerm(): Node<ExpKind> {
-  const factor = parseFactor();
-  const otherFactor = parseOtherFactor();
-  if (otherFactor === null) return factor as Node<ExpKind>;
-  const multOpExp = createNode("OpExp");
-  multOpExp.left = factor;
-  multOpExp.op = otherFactor[0];
-  multOpExp.right = otherFactor[1];
-  return multOpExp as Node<"OpExp">;
-}
-
-function parseOtherTerm(): null | ["+" | "-", Node<ExpKind>] {
-  return next<["+" | "-", Node<ExpKind>], null>()
-  .in_predict(84).then_take(() => null)
-  .in_predict(85).then_take(() => {
-    const op = parseAddOp();
-    const exp = parseExp();
-    return [op, exp];
-  })
-  .or_err("Unexpected token")!;
-}
-
-function parseOtherFactor(): null | ["*" | "/", Node<ExpKind>] {
-  return next<["*" | "/", Node<ExpKind>], null>()
-  .in_predict(87).then_take(() => null)
-  .in_predict(88).then_take(() => {
-    const op = parseMultOp();
-    const exp = parseTerm();
-    return [op, exp];
-  })
-  .or_err("Unexpected token")!;
+  let term = parseFactor();
+  while (true) {
+    const op = next<"*" | "/">().is_op(["*", "/"]).then_take().or_omit();
+    if (!op) break;
+    const otherFactor = parseFactor();
+    const multOpExp = createNode("OpExp");
+    multOpExp.left = term;
+    multOpExp.op = op;
+    multOpExp.right = otherFactor;
+    term = multOpExp as Node<ExpKind> ;
+  }
+  return term as Node<ExpKind>;
 }
 
 function parseFactor(): Node<ExpKind>  {
@@ -535,33 +534,11 @@ function parseFieldVarMore(): Node<"ArrayVariMore"> | null {
   .in_predict(97).then_take(() => null)
   .in_predict(98).then_skip().then_take(() => {
     const node = createNode("ArrayVariMore");
-    next().match("L_SQUARE").or_err("Unexpected token")
     node.index = parseExp();
     next().match("R_SQUARE").or_err("Expect `]`")
     return node as Node<"ArrayVariMore">;  
   })
   .or_err("Unexpected token")!;
-}
-
-function parseCmpOp():  "<" | "=" {
-  return next<"<" | "=">()
-  .in_predict(99).then_skip().then_take(() => "<")
-  .in_predict(100).then_skip().then_take(() => "=")
-  .or_err("Expect `<` or `=`")!;
-}
-
-function parseAddOp(): "+" | "-" {
-  return next<"+" | "-">()
-  .in_predict(101).then_skip().then_take(() => "+")
-  .in_predict(102).then_skip().then_take(() => "-")
-  .or_err("Expect `+` or `-`")!;
-}
-
-function parseMultOp(): "*" | "/" {
-  return next<"*" | "/">()
-  .in_predict(103).then_skip().then_take(() => "*")
-  .in_predict(104).then_skip().then_take(() => "/")
-  .or_err("Expect `*` or `/`")!;
 }
 
 //----------------------------------------------------------------------------------------------
