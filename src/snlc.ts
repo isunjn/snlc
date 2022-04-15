@@ -111,7 +111,7 @@ fs.readFile(file, "utf-8", (err, code) => {
   // if (semErrs.length > 0) {
   // }
 
-  console.log(GREEN + " ✓ Compile completed without error\n");
+  console.log(GREEN + " ✓ Compile completed without error\n" + NOCOLOR);
 });
 
 //----------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ function printErrors(code: string, errs: Error[]) {
     console.error(BLUE + err.line.toString().padStart(pad) + " |  " + NOCOLOR + lines[err.line - 1]);
     console.error(" ".repeat(pad) + BLUE + " | " + " ".repeat(err.column) + RED + "^  " + err.msg);
   }
-  console.error("\n");
+  console.error("\n" + NOCOLOR);
 }
 
 function printAST(ast: AST) {
