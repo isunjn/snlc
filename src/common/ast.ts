@@ -43,7 +43,7 @@ type DeclarePart = Base & {
 
 //----------------------------------------------------------------
 
-type Declaration = TypeDeclaration | VarDeclaration | ParamDeclaration | ProcDeclaration;
+export type Declaration = TypeDeclaration | VarDeclaration | ParamDeclaration | ProcDeclaration;
 
 type TypeDeclaration = Base & {
   kind: "TypeDeclaration";
@@ -107,7 +107,7 @@ type IdType = Base & {
 
 //----------------------------------------------------------------
 
-type Stm = IfStm | WhileStm | ReadStm | WriteStm | ReturnStm | AssignStm | CallStm;
+export type Stm = IfStm | WhileStm | ReadStm | WriteStm | ReturnStm | AssignStm | CallStm;
 
 type IfStm = Base & {
   kind: "IfStm";
@@ -158,7 +158,7 @@ type CallStm = Base & {
 
 //----------------------------------------------------------------
 
-type Exp = OpExp | ConstExp | IdExp;
+export type Exp = OpExp | ConstExp | IdExp;
 
 type OpExp = Base & {
   kind: "OpExp";
@@ -330,61 +330,4 @@ export function createNode<T extends NodeKind>(kind: T): NullableNode<T> {
     case "FieldVariMore":    return { kind, id: null, more: null }                                               as NullableNode<T>;
     default:                 throw "panic!";
   }
-}
-
-//================================================================
-
-export function printAST(ast: AST) {
-  const MAGENTA='\u001b[35m', GREEN='\u001b[0;32m', NOCOLOR='\u001b[0m';
-
-  const prefix: string[] = [];
-
-  function printNode<T extends NodeKind>(node: Node<T> | Node<T>[], isLast: boolean, isfirst = false) {
-    if (!isfirst) prefix.push(isLast ? "    " : "│   ");
-    const items: ([string, Node<NodeKind> | string | number | null])[] = [];
-    let alreadyInArr = false;
-    if (Array.isArray(node)) {
-      alreadyInArr = true;
-      for (const item of node) items.push(["*", item]);
-    } else {
-      for (const key in node) {
-        if (Object.prototype.hasOwnProperty.call(node, key)) {
-          if (key === "sibling") continue;
-          items.push([key, node[key] as unknown as Node<NodeKind> | string | number | null])
-        }
-      }
-    }
-    for (const [idx, [key, value]] of items.entries()) {
-      const isLast = idx === items.length-1 ? true : false;
-      process.stdout.write(prefix.join('') + (isLast ? '└── ' : '├── ') + key);
-      if (value === null || typeof value === "string" || typeof value === "number") {
-        process.stdout.write(": " + (key === "kind" ? GREEN : MAGENTA) + value + NOCOLOR + "\n");
-      } else {
-        process.stdout.write("\n");
-        let childrenIsArr = false;
-        const arr = [];
-        if (!alreadyInArr && mayHaveSibling(value)) {
-          if (value.sibling) {
-            childrenIsArr = true;
-            let curr: typeof value | null = value;
-            while(curr) {
-              arr.push(curr);
-              curr = curr.sibling;
-            }
-          }
-        }
-        if (childrenIsArr) printNode(arr, isLast);
-        else printNode(value, isLast);
-      }
-    }
-    prefix.pop();
-  }
-
-  function mayHaveSibling(node: Node<NodeKind>): node is (Identifier | Declaration | Stm | Exp) {
-    if ((<Identifier | Declaration | Stm | Exp>node).sibling !== undefined ) return true;
-    else return false;
-  }
-
-  process.stdout.write("AST\n");
-  printNode(ast, true, true);
 }

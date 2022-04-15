@@ -56,8 +56,4 @@ export class Token {
       this.sem = sem;
     }
   }
-
-  toString() {
-    return `[${this.line},${this.column}]\t ${this.lex}\t\t ${this.sem ? this.sem : ""}`;
-  }
 }

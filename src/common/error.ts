@@ -2,7 +2,7 @@ import { T_Symbo } from "./grammar";
 
 type ErrorType = "LexError" | "SyntaxError" | "SemError";
 
-abstract class Error {
+export abstract class Error {
   kind: ErrorType;
   line: number;
   column: number;
@@ -13,10 +13,6 @@ abstract class Error {
     this.line = line;
     this.column = column;
     this.msg = msg;
-  }
-
-  toString() {
-    return `[${this.line},${this.column}]\t ${this.msg}`;
   }
 }
 
