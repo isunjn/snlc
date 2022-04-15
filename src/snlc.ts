@@ -17,7 +17,7 @@ let SHOW_SET = false;
 let SHOW_TABLE = false;
 let SHOW_TOKEN = false;
 let SHOW_AST = false;
-let USE_RD = false;
+let USE_LL1 = false;
 
 const MAGENTA='\u001b[35m', GREEN='\u001b[32m', RED='\u001b[31m', BLUE='\u001b[34m', NOCOLOR='\u001b[0m';
 
@@ -49,7 +49,7 @@ for (const flag of flags) {
     case "--table": SHOW_TABLE = true; break;
     case "--token": SHOW_TOKEN = true; break;
     case "--ast": SHOW_AST = true; break;
-    case "--rd": USE_RD = true;  break;
+    case "--ll": USE_LL1 = true;  break;
     default:
       console.error("Unknown flag: " + flag);
       process.exit(1);
@@ -96,7 +96,7 @@ fs.readFile(file, "utf-8", (err, code) => {
   }
   if (SHOW_TOKEN) process.exit();
 
-  const parser = USE_RD ? rdParser : ll1Parser;
+  const parser = USE_LL1 ? ll1Parser : rdParser;
   const [ast, syntaxErr] = parser(tokens);
   if (syntaxErr) {
     printErrors(code, [syntaxErr]);
@@ -130,7 +130,7 @@ function printErrors(code: string, errs: Error[]) {
       console.error(BLUE + (err.line - 1).toString().padStart(pad) + " |  " + NOCOLOR + lines[err.line - 2]);
     }
     console.error(BLUE + err.line.toString().padStart(pad) + " |  " + NOCOLOR + lines[err.line - 1]);
-    console.error(" ".repeat(pad) + BLUE + " |  " + " ".repeat(err.column - 1) + RED + "^  " + err.msg);
+    console.error(" ".repeat(pad) + BLUE + " | " + " ".repeat(err.column) + RED + "^  " + err.msg);
   }
   console.error("\n");
 }

@@ -116,7 +116,7 @@ function parseTypeDec(): Node<"TypeDeclaration"> | null {
   return next<"TypeDeclaration", null>()
   .in_predict(5).then_take(() => null)
   .in_predict(6).then_skip().then_take(parseTypeDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect keyword `type`, `var`, `procedure` or `begin`")!;
 }
 
 function parseTypeDecList(): Node<"TypeDeclaration"> {
@@ -133,7 +133,7 @@ function parseTypeDecMore(): Node<"TypeDeclaration"> | null {
   return next<"TypeDeclaration", null>()
   .in_predict(9).then_take(() => null)
   .in_predict(10).then_take(parseTypeDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect an identifier or keyword `var`, `procedure`, `begin`")!;
 }
 
 function parseTypeName(): Node<SnlTypeKind> {
@@ -145,7 +145,7 @@ function parseTypeName(): Node<SnlTypeKind> {
     node.id = next<"Identifier">().match("ID").then_take().or_err("Expect an identifier")!;
     return node as Node<"IdType">;  
   })
-  .or_err("Unexpected token")!;
+  .or_err("Expect an identifier or keyword `integer`, `char`, `array`, `record`")!;
 }
 
 function parseBaseType(): Node<"IntegerType" | "CharType"> {  
@@ -157,14 +157,13 @@ function parseBaseType(): Node<"IntegerType" | "CharType"> {
 
 function parseStructureType(): Node<"ArrayType" | "RecordType"> {
   return next<"ArrayType" | "RecordType">()
-  .in_predict(17).then_take(parseArrayType)
-  .in_predict(18).then_take(parseRecordType)
+  .in_predict(17).then_skip().then_take(parseArrayType)
+  .in_predict(18).then_skip().then_take(parseRecordType)
   .or_err("Expect keword `array` or `record`")!;
 }
 
 function parseArrayType(): Node<"ArrayType"> {
   const node = createNode("ArrayType");
-  next().match("ARRAY").or_err("Expect keyword `array`");
   next().match("L_SQUARE").or_err("Expect `[`");
   node.low = next<"IntegerLiteral">().match("INTC").then_take().or_err("Expect an integer")!;
   next().match("RANGE").or_err("Expect `..`");
@@ -177,7 +176,6 @@ function parseArrayType(): Node<"ArrayType"> {
 
 function parseRecordType(): Node<"RecordType"> {
   const node = createNode("RecordType");
-  next().match("RECORD").or_err("Expect keyword `record`");
   node.fields = parseFieldDecList();
   next().match("END").or_err("Expect keyword `end`");
   return node as Node<"RecordType">;
@@ -188,7 +186,7 @@ function parseFieldDecList(): Node<"VarDeclaration"> {
   node.type = next<SnlTypeKind>()
     .in_predict(23).then_take(parseBaseType)
     .in_predict(24).then_take(parseArrayType)
-    .or_err("Unexpected token")!;
+    .or_err("Expect keyword `integer`, `char` or `array`")!;
   node.ids = parseIdList();
   next().match("SEMI").or_err("Expect `;`");
   node.sibling = parseFieldDecMore();
@@ -199,7 +197,7 @@ function parseFieldDecMore(): Node<"VarDeclaration"> | null {
   return next<"VarDeclaration", null>()
   .in_predict(25).then_take(() => null)
   .in_predict(26).then_take(parseFieldDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect keyword `end`, `integer`, `char`, `array`")!;
 }
 
 function parseIdList(): Node<"Identifier"> {
@@ -212,14 +210,14 @@ function parseIdMore(): Node<"Identifier"> | null {
   return next<"Identifier", null>()
   .in_predict(28).then_take(() => null)
   .in_predict(29).then_skip().then_take(parseIdList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `;` or `,`")!;
 }
 
 function parseVarDec(): Node<"VarDeclaration"> | null {
   return next<"VarDeclaration", null>()
   .in_predict(30).then_take(() => null)
   .in_predict(31).then_skip().then_take(parseVarDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect keyword `var`, `procedure` or `begin`")!;
 }
 
 function parseVarDecList(): Node<"VarDeclaration"> {
@@ -235,7 +233,7 @@ function parseVarDecMore(): Node<"VarDeclaration"> | null {
   return next<"VarDeclaration", null>()
   .in_predict(34).then_take(() => null)
   .in_predict(35).then_take(parseVarDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect a type or keword `procedure`, `begin`")!;
 }
 
 function parseVarIdList(): Node<"Identifier"> {
@@ -248,14 +246,14 @@ function parseVarIdMore(): Node<"Identifier"> | null {
   return next<"Identifier", null>()
   .in_predict(37).then_take(() => null)
   .in_predict(38).then_skip().then_take(parseVarIdList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `;` or `,`")!;
 }
 
 function parseProcDec(): Node<"ProcDeclaration"> | null {
   return next<"ProcDeclaration", null>()
   .in_predict(39).then_take(() => null)
   .in_predict(40).then_skip().then_take(parseProcDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect keyword `procedure` or `begin`")!;
 }
 
 function parseProcDecList(): Node<"ProcDeclaration"> {
@@ -275,14 +273,14 @@ function parseProcDecMore(): Node<"ProcDeclaration"> | null {
   return next<"ProcDeclaration", null>()
   .in_predict(42).then_take(() => null)
   .in_predict(43).then_take(parseProcDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect keyword `procedure` or `begin`")!;
 }
 
 function parseParamList(): Node<"ParamDeclaration"> | null {
   return next<"ParamDeclaration", null>()
   .in_predict(45).then_take(() => null)
   .in_predict(46).then_take(parseParamDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect a type or `)`")!;
 }
 
 function parseParamDecList(): Node<"ParamDeclaration"> {
@@ -295,7 +293,7 @@ function parseParamMore(): Node<"ParamDeclaration"> | null {
   return next<"ParamDeclaration", null>()
   .in_predict(48).then_take(() => null)
   .in_predict(49).then_skip().then_take(parseParamDecList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `)` or `;`")!;
 }
 
 function parseParam(): Node<"ParamDeclaration"> {
@@ -303,7 +301,7 @@ function parseParam(): Node<"ParamDeclaration"> {
   node.passBy = next<"value" | "ref">()
     .in_predict(50).then_take(() => "value")
     .in_predict(51).then_skip().then_take(() => "ref")
-    .or_err("Unexpected token")!;
+    .or_err("Expect a type or keyword `var`")!;
   node.type = parseTypeName();
   node.ids = parseFormList();
   node.sibling = parseParamMore();
@@ -320,7 +318,7 @@ function parseFidMore(): Node<"Identifier"> | null {
   return next<"Identifier", null>()
   .in_predict(53).then_take(() => null)
   .in_predict(54).then_skip().then_take(parseFormList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `;`, `,` or `)`")!;
 }
 
 function parseProgramBody(): Node<"ProgramBody"> {
@@ -341,7 +339,7 @@ function parseStmMore(): Node<StmKind> | null {
   return next<StmKind, null>()
   .in_predict(59).then_take(() => null)
   .in_predict(60).then_skip().then_take(parseStmList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `;` or keyword `end`, `else, `fi`, `endwh`")!;
 }
 
 function parseStm(): Node<StmKind> {
@@ -352,7 +350,7 @@ function parseStm(): Node<StmKind> {
   .in_predict(64).then_skip().then_take(parseWriteStm)
   .in_predict(65).then_skip().then_take(parseReturnStm)
   .in_predict(66).then_take(parseAssCall)
-  .or_err("Unexpected token")!;
+  .or_err("Expect an identifier or keyword `if`, `while`, `read`, `write`, `return`")!;
 }
 
 function parseIfStm(): Node<"IfStm"> {
@@ -434,14 +432,14 @@ function parseActParamList(): Node<ExpKind> | null {
     exp.sibling = parseActParamMore();
     return exp as Node<ExpKind>;  
   })
-  .or_err("Unexpected token")!;
+  .or_err("Expect `)` or an expression")!;
 }
 
 function parseActParamMore(): Node<ExpKind> | null {
   return next<ExpKind, null>()
   .in_predict(79).then_take(() => null)
   .in_predict(80).then_skip().then_take(parseActParamList)
-  .or_err("Unexpected token")!;
+  .or_err("Expect `,` or `)`")!;
 }
 
 function parseRelExp(): Node<"OpExp"> {
@@ -499,7 +497,7 @@ function parseFactor(): Node<ExpKind>  {
     node.content = parseVariable();
     return node as Node<"IdExp">;
   })
-  .or_err("Unexpected token")!;
+  .or_err("Expect an expression")!;
 }
 
 function parseVariable(): Node<"Variable"> {
