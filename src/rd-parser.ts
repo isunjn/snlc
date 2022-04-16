@@ -185,7 +185,7 @@ function parseFieldDecList(): Node<"VarDeclaration"> {
   const node = createNode("VarDeclaration");
   node.type = next<SnlTypeKind>()
     .in_predict(23).then_take(parseBaseType)
-    .in_predict(24).then_take(parseArrayType)
+    .in_predict(24).then_skip().then_take(parseArrayType)
     .or_err("Expect keyword `integer`, `char` or `array`")!;
   node.ids = parseIdList();
   next().match("SEMI").or_err("Expect `;`");
@@ -272,7 +272,7 @@ function parseProcDecList(): Node<"ProcDeclaration"> {
 function parseProcDecMore(): Node<"ProcDeclaration"> | null {
   return next<"ProcDeclaration", null>()
   .in_predict(42).then_take(() => null)
-  .in_predict(43).then_take(parseProcDecList)
+  .in_predict(43).then_skip().then_take(parseProcDecList)
   .or_err("Expect keyword `procedure` or `begin`")!;
 }
 
