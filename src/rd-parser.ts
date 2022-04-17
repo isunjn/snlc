@@ -158,7 +158,7 @@ function parseTypeName(): Node<SnlTypeKind> {
     node.id = next<"Identifier">().match("ID").then_take().or_err("Expect an identifier")!;
     return node as Node<"IdType">;  
   })
-  .or_err("Expect an identifier or keyword `integer`, `char`, `array`, `record`")!;
+  .or_err("Expect a type")!;
 }
 
 function parseBaseType(): Node<"IntegerType" | "CharType"> {  
@@ -293,7 +293,7 @@ function parseParamList(): Node<"ParamDeclaration"> | null {
   return next<"ParamDeclaration", null>()
   .in_predict(45).then_take(() => null)
   .in_predict(46).then_take(parseParamDecList)
-  .or_err("Expect a type or `)`")!;
+  .or_err("Expect a type or keyword `var` or `)`")!;
 }
 
 function parseParamDecList(): Node<"ParamDeclaration"> {
@@ -331,7 +331,7 @@ function parseFidMore(): Node<"Identifier"> | null {
   return next<"Identifier", null>()
   .in_predict(53).then_take(() => null)
   .in_predict(54).then_skip().then_take(parseFormList)
-  .or_err("Expect `;`, `,` or `)`")!;
+  .or_err("Expect `;` or `,` or `)`")!;
 }
 
 function parseProgramBody(): Node<"ProgramBody"> {

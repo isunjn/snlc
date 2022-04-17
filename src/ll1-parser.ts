@@ -256,7 +256,7 @@ function parse(): AST {
     if (isNonTerminal(topSymbo)) {
       // try get grammar rule from table, throw error if failed
       const ruleIdx = TABLE.get(topSymbo)!.get(currentToken.lex as T_Symbo);
-      if (!ruleIdx) throw new SyntaxError(currentToken.line, currentToken.column, "Unexpected token");
+      if (!ruleIdx) throw new SyntaxError(currentToken.line, currentToken.column, errMsgOf(topSymbo));
       // pop the symbo stack, push symbos of the rule's right reversely
       SYMBO_STACK.pop();
       const rule = grammar.get(ruleIdx)!;
