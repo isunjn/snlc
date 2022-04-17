@@ -9,7 +9,7 @@ import { Error } from "./common/error";
 import lexer from "./lexer";
 import rdParser from "./rd-parser";
 import ll1Parser from "./ll1-parser";
-// import analyzer from "./sem-analyzer";
+import analyzer from "./sem-analyzer";
 
 //----------------------------------------------------------------------------------------------
 
@@ -107,9 +107,11 @@ fs.readFile(file, "utf-8", (err, code) => {
     process.exit();
   }
 
-  // const semErrs = analyzer(ast);
-  // if (semErrs.length > 0) {
-  // }
+  const semErrs = analyzer(ast);
+  if (semErrs.length > 0) {
+    printErrors(code, semErrs);
+    process.exit();
+  }
 
   console.log(GREEN + " ✓ Compile completed without error\n" + NOCOLOR);
 });
@@ -138,8 +140,8 @@ function printErrors(code: string, errs: Error[]) {
 function printAST(ast: AST) {
   const prefix: string[] = [];
 
-  function printNode<T extends NodeKind>(node: Node<T> | Node<T>[], isLast: boolean, isfirst = false) {
-    if (!isfirst) prefix.push(isLast ? "    " : "│   ");
+  function printNode<T extends NodeKind>(node: Node<T> | Node<T>[], isLast: boolean, firstTimePrint = false) {
+    if (!firstTimePrint) prefix.push(isLast ? "    " : "│   ");
     const items: ([string, Node<NodeKind> | string | number | null])[] = [];
     let alreadyInArr = false;
     if (Array.isArray(node)) {
@@ -148,7 +150,7 @@ function printAST(ast: AST) {
     } else {
       for (const key in node) {
         if (Object.prototype.hasOwnProperty.call(node, key)) {
-          if (key === "sibling") continue;
+          if (key === "sibling" || key === "line" || key === "column") continue;
           items.push([key, node[key] as unknown as Node<NodeKind> | string | number | null])
         }
       }
