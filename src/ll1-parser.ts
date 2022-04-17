@@ -47,8 +47,16 @@ function link(kind: NodeKind | null, keys: string[] = []) {
   }
   const node = createNode(kind);
   switch (kind) {
-    case "Identifier": (<NullableNode<"Identifier">>node).value = TOKENS[INDEX].sem!; break;
-    case "IntegerLiteral": (<NullableNode<"IntegerLiteral">>node).value = parseInt(TOKENS[INDEX].sem!); break;
+    case "Identifier": 
+      (<NullableNode<"Identifier">>node).value = TOKENS[INDEX].sem!;
+      (<NullableNode<"Identifier">>node).line = TOKENS[INDEX].line;
+      (<NullableNode<"Identifier">>node).column = TOKENS[INDEX].column;
+      break;
+    case "IntegerLiteral": 
+      (<NullableNode<"IntegerLiteral">>node).value = parseInt(TOKENS[INDEX].sem!);
+      (<NullableNode<"IntegerLiteral">>node).line = TOKENS[INDEX].line;
+      (<NullableNode<"IntegerLiteral">>node).column = TOKENS[INDEX].column;
+      break;
     case "ParamDeclaration": (<NullableNode<"ParamDeclaration">>node).passBy = PASS_BY!; break;
     case "CallStm": (<NullableNode<"CallStm">>node).fn = ASS_OR_CALL_ID; break;
     case "Variable": if (!keys.includes("id")) (<NullableNode<"Variable">>node).id = ASS_OR_CALL_ID; break; // variable of the assign stm
@@ -86,13 +94,13 @@ function endOneExp() {
     const finalExp = OPERAND_STACK.pop()!;
     const [pNode, pKey] = AST_STACK.pop()!;
     pNode[pKey] = finalExp;
-    // push [exp, "sibling"] into ast stack if is should sibling
+    // push [exp, "sibling"] into ast stack if should sibling
     if (shouldSibling) AST_STACK.push([finalExp, "sibling"]);
   }
 }
 
 function handleConstExp() {
-  const num = createNode("IntegerLiteral");
+  const num = createNode("IntegerLiteral", TOKENS[INDEX].line, TOKENS[INDEX].column);
   num.value = parseInt(TOKENS[INDEX].sem!);
   const exp = createNode("ConstExp");
   exp.content = num as Node<"IntegerLiteral">;
@@ -178,6 +186,8 @@ function getActions(): Map<number, () => unknown> {
     .set(66, () => {
       const id = createNode("Identifier");
       id.value = TOKENS[INDEX].sem!;
+      id.line = TOKENS[INDEX].line;
+      id.column = TOKENS[INDEX].column;
       ASS_OR_CALL_ID = id as Node<"Identifier">;
     })
     .set(69, () => {

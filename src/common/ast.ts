@@ -1,5 +1,5 @@
 type Base = {
-  // TODO:
+  // TODO: indicate the span of every AST node
   // span: { start: number; end: number}
 }
 
@@ -7,14 +7,19 @@ type Identifier = Base & {
   kind: "Identifier";
   value: string;
   sibling: Identifier | null;
+  // identifier's line and column are used in sem-analyzer
+  line: number;
+  column: number;
 }
 
 type IntegerLiteral = Base & {
   kind: "IntegerLiteral";
   value: number;
+  // identifier's line and column are used in sem-analyzer
+  line: number;
+  column: number;
 }
 
-// TODO:
 // type CharLiteral = Base & {
 //   kind: "CharLiteral";
 //   value: string;
@@ -111,7 +116,7 @@ type IfStm = Base & {
   kind: "IfStm";
   test: OpExp;
   thenStms: Stm;
-  elseStms: Stm; // TODO: currently if_stm must have else block 👎
+  elseStms: Stm;
   sibling: Stm | null;
 }
 
@@ -296,10 +301,10 @@ export type NullableNode<T extends NodeKind> =
   T extends "FieldVariMore"    ? Nullable<FieldVariMore>    :
   never;
 
-export function createNode<T extends NodeKind>(kind: T): NullableNode<T> {
+export function createNode<T extends NodeKind>(kind: T, line?: number, column?: number): NullableNode<T> {
   switch (kind) {
-    case "Identifier":       return { kind, value: null, sibling: null }                                         as NullableNode<T>;
-    case "IntegerLiteral":   return { kind, value: null }                                                        as NullableNode<T>;
+    case "Identifier":       return { kind, value: null, sibling: null, line, column }                           as NullableNode<T>;
+    case "IntegerLiteral":   return { kind, value: null, line, column }                                          as NullableNode<T>;
     case "Program":          return { kind, name: null, declare: null, body: null }                              as NullableNode<T>;
     case "ProgramBody":      return { kind, stms: null }                                                         as NullableNode<T>;
     case "DeclarePart":      return { kind, types: null, vars: null, procs: null }                               as NullableNode<T>;

@@ -57,8 +57,21 @@ class ParsingWorker<T extends NodeKind | LiteralNodeKind, N extends null | unkno
     if (this._miss || this._take) return this;
     if (fn) this._result = fn();
     else switch (this._token.lex) {
-      case "ID": this._result = { kind: "Identifier", value: this._token.sem!, sibling: null } as ParsingResult<T, N>; break;
-      case "INTC": this._result = { kind: "IntegerLiteral", value: parseInt(this._token.sem!) } as ParsingResult<T, N>; break;
+      case "ID": 
+        this._result = { 
+          kind: "Identifier", 
+          value: this._token.sem!, 
+          sibling: null, 
+          line: this._token.line, 
+          column: this._token.column 
+        } as ParsingResult<T, N>; break;
+      case "INTC": 
+        this._result = {
+          kind: "IntegerLiteral",
+          value: parseInt(this._token.sem!),
+          line: this._token.line,
+          column: this._token.column
+        } as ParsingResult<T, N>; break;
       case "LT": this._result = "<" as ParsingResult<T, N>; break;
       case "EQ": this._result = "=" as ParsingResult<T, N>; break;
       case "PLUS": this._result = "+" as ParsingResult<T, N>; break;
