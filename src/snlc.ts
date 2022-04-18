@@ -113,7 +113,14 @@ fs.readFile(file, "utf-8", (err, code) => {
     process.exit();
   }
 
-  console.log(GREEN + " ✓ Compile completed without error\n" + NOCOLOR);
+  console.log(GREEN + 
+`                    _
+        ___  _ __  | |  ___ 
+       / __|| '_ \\ | | / __|
+       \\__ \\| | | || || (__ 
+       |___/|_| |_||_| \\___|
+`);
+  console.log(" ✓ Compile completed without error\n" + NOCOLOR);
 });
 
 //----------------------------------------------------------------------------------------------
