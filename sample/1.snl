@@ -1,0 +1,12 @@
+program p
+type 
+  t = integer;
+var
+  t i;
+  char ch;
+  array [5..1] of integer arr;
+
+begin
+  t := arr[ch];
+  fn(1)
+end.

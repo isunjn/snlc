@@ -1,0 +1,20 @@
+program p
+type 
+  t = integer;
+var
+  t i,j,k;&
+  char ch;
+  array [1..20] of integer arr;
+procedure fn(integer num);
+  var 
+    integer step;
+  begin
+    write(num+step)
+  end
+
+begin
+  ch = '';
+  i : i*j/k;
+  fn(i)
+end.
+{This file contains several lexical errors

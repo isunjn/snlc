@@ -1,0 +1,35 @@
+{This file contains several semantic errors}
+program p
+type
+  t1 = integer;
+  rr = record
+         integer i;
+         char ch;
+         array [4..2] of char arr, ch;
+       end;
+var 
+  integer v1, v2, t1;
+  rr v;
+
+procedure q(integer i, v1);
+  var 
+    integer a;
+  procedure fn(char ch);
+    type ccc = char;
+    begin 
+      write(t1)
+    end
+  procedure xxx(var char ch);
+    type int = integer;
+    begin 
+      write(1);
+      q(ch)
+    end
+  begin
+    a:=i
+  end
+
+
+begin
+  v.q := v.arr
+end.

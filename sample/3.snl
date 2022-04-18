@@ -1,0 +1,22 @@
+{This file contains several syntax errors}
+program p
+type t := integer;
+var 
+  integer v1, v2;
+  array [1.2] of integer arr;
+
+procedure q(integer i);
+var integer a;
+begin
+  a:=i;
+  write(a))
+end
+
+begin
+  read(1);
+  if 1<4
+  then v1:=v1+10
+  else v1:=v1-10
+  fi;
+  q(arr[1*(3+2/5)])
+end.
