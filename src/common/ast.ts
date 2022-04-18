@@ -7,7 +7,7 @@ type Identifier = Base & {
   kind: "Identifier";
   value: string;
   sibling: Identifier | null;
-  // identifier's line and column are used in sem-analyzer
+  // identifier's line and column are used by sem-analyzer
   line: number;
   column: number;
 }
@@ -15,7 +15,7 @@ type Identifier = Base & {
 type IntegerLiteral = Base & {
   kind: "IntegerLiteral";
   value: number;
-  // identifier's line and column are used in sem-analyzer
+  // integerliteral's line and column are used by sem-analyzer
   line: number;
   column: number;
 }
