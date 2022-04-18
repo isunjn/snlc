@@ -1,0 +1,111 @@
+<Letter>             ::=        a...z | A...z
+<Number>             ::=        0...9
+<ID>                 ::=        <Letter> { <Letter> | <Number> }
+<INTC>               ::=        <Number> { <Number> }
+
+//----------------------------------------------------------------------------------
+
+<Program>         ::=   <ProgramHead>  <DeclarePart>  <ProgramBody>  .
+<ProgramHead>     ::=   program  <ProgramName>
+<ProgramName>     ::=   <ID>
+<DeclarePart>     ::=   <TypeDec>  <VarDec>  <ProcDec>
+<TypeDec>         ::=   ∊
+                    |   <TypeDeclaration>
+<TypeDeclaration> ::=   type  <TypeDecList>
+<TypeDecList>     ::=   <TypeId>  =  <TypeName>  ;  <TypeDecMore>
+<TypeDecMore>     ::=   ∊
+                    |   <TypeDecList>
+<TypeId>          ::=   <ID>
+<TypeName>        ::=   <BaseType>
+                    |   <StructureType>
+                    |   <ID>
+<BaseType>        ::=   integer
+                    |   char
+<StructureType>   ::=   <ArrayType>
+                    |   <RecordType>
+<ArrayType>       ::=   array  [  <Low>  ..  <Top>  ]  of  <BaseType>
+<Low>             ::=   <INTC>
+<Top>             ::=   <INTC>
+<RecordType>      ::=   record  <FieldDecList>  end
+<FieldDecList>    ::=   <BaseType>  <IdList>  ;  <FieldDecMore>
+                    |   <ArrayType>  <IdList>  ;  <FieldDecMore>
+<FieldDecMore>    ::=   ∊
+                    |   <FieldDecList>
+<IdList>          ::=   <ID>  <IdMore>
+<IdMore>          ::=   ∊
+                    |   ,  <IdList>
+<VarDec>          ::=   ∊
+                    |   <VarDeclaration>
+<VarDeclaration>  ::=   var  <VarDecList>
+<VarDecList>      ::=   <TypeName>  <VarIdList>  ;  <VarDecMore>
+<VarDecMore>      ::=   ∊
+                    |   <VarDecList>
+<VarIdList>       ::=   <ID>  <VarIdMore>
+<VarIdMore>       ::=   ∊
+                    |   ,  <VarIdList>
+<ProcDec>         ::=   ∊
+                    |   <ProcDeclaration>
+<ProcDeclaration> ::=   procedure  <ProcName>  (  <ParamList>  )  ;  <ProcDecPart>  <ProcBody>  <ProcDecMore>
+<ProcDecMore>     ::=   ∊
+                    |   <ProcDeclaration>
+<ProcName>        ::=   <ID>
+<ParamList>       ::=   ∊
+                    |   <ParamDecList
+<ParamDecList>    ::=   <Param>  <ParamMore>
+<ParamMore>       ::=   ∊
+                    |   ;  <ParamDecList>
+<Param>           ::=   <TypeName>  <FormList>
+                    |   var  <TypeName>  <FormList>
+<FormList>        ::=   <ID>  <FidMore>
+<FidMore>         ::=   ∊
+                    |   ,  <FormList>
+<ProcDecPart>     ::=   <DeclarePart>
+<ProcBody>        ::=   <ProgramBody>
+<ProgramBody>     ::=   begin  <StmList>  end
+<StmList>         ::=   <Stm>  <StmMore>
+<StmMore>         ::=   ∊
+                    |   ;  <StmList>
+<Stm>             ::=   <ConditionalStm>
+                    |   <LoopStm>
+                    |   <InputStm>
+                    |   <OutputStm>
+                    |   <ReturnStm>
+                    |   <ID>  <AssCall>
+<AssCall>         ::=   <AssignmentRest>
+                    |   <CallStmRest>
+<AssignmentRest>  ::=   <VariMore>  :=  <Exp>
+<ConditionalStm>  ::=   if  <RelExp>  then  <StmList>  else  <StmList>  fi
+<LoopStm>         ::=   while  <RelExp>  do  <StmList>  endwh
+<InputStm>        ::=   read  (  <Invar>  )
+<Invar>           ::=   <ID>
+<OutputStm>       ::=   write  (  <Exp>  )
+<ReturnStm>       ::=   return  (  <Exp>  )
+<CallStmRest>     ::=   (  <ActParamList>  )
+<ActParamList>    ::=   ∊
+                    |   <Exp>  <ActParamMore>
+<ActParamMore>    ::=   ∊
+                    |   ,  <ActParamList>
+<RelExp>          ::=   <Exp>  <OtherRelE>
+<OtherRelE>       ::=   <CmpOp>  <Exp>
+<Exp>             ::=   <Term>  <OtherTerm>
+<OtherTerm>       ::=   ∊
+                    |   <AddOp>  <Exp>
+<Term>            ::=   <Factor>  <OtherFactor>
+<OtherFactor>     ::=   ∊
+                    |   <MultOp>  <Term>
+<Factor>          ::=   (  <Exp>  )
+                    |   <INTC>
+                    |   <Variable>
+<Variable>        ::=   <ID>  <VariMore>
+<VariMore>        ::=   ∊
+                    |   [  <Exp>  ]
+                    |   .  <FieldVar>
+<FieldVar>        ::=   <ID>  <FieldVarMore>
+<FieldVarMore>    ::=   ∊
+                    |   [  <Exp>  ]
+<CmpOp>           ::=   <
+                    |   =
+<AddOp>           ::=   +
+                    |   -
+<MultOp>          ::=   *
+                    |   /
