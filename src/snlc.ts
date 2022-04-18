@@ -29,8 +29,12 @@ if (!file) {
   process.exit(1);
 }
 const sample = path.format({ dir: "sample", name: file, ext: ".snl" });
-const stat = fs.statSync(sample);
-if (stat.isFile()) file = sample;
+try {
+  const stat = fs.statSync(sample);
+  if (stat.isFile()) file = sample;
+} catch (err) {
+  // no throw
+}
 try {
   const stat = fs.statSync(file);
   if (!stat.isFile()) {
