@@ -277,8 +277,6 @@ function checkStms(stms: Node<StmKind>) {
           for (let i = 0; i < argsTy.length; i++) {
             if (argsTy[i] !== -1 && argsTy[i] !== item.params[i].ty) {
               ERRORS.push(new SemError(stm.fn.line, stm.fn.column, `Type mismatch of the \`${i + 1}\`th argument and parameter`));
-            } else if (item.params[i].access === "indir") {
-              ERRORS.push(new SemError(stm.fn.line, stm.fn.column, `The \`${i + 1}\`th argument expect a reference, not a value. (But actually you can't get a ref in SNL ¯\\_(ツ)_/¯)`));
             }
           }
         }
