@@ -104,6 +104,7 @@ function S_INID(ch: Char, str: Char[]): StateFnResult {
 
 function S_INNUM(ch: Char, str: Char[]): StateFnResult {
   if (isNumber.test(ch)) return S_INNUM;
+  if (isLetter.test(ch)) return new LexError(LINE, COLUMN, "An identifier or keyword cannot immediately follow an integer literal");
   goBack(ch === "\n", ch === "EOI");
   const value = str.reduce((acc, ch) => (acc += ch), "");
   return new Token(LINE, TOKEN_COLUMN, "INTC", value);
